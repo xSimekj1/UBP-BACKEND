@@ -9,7 +9,7 @@ import java.util.Map;
 @RestController
 @CrossOrigin
 @RequestMapping(value = "/api")
-public class KeyServiceController {
+public class KeyController {
 
     @Autowired
     KeyService keyService;
