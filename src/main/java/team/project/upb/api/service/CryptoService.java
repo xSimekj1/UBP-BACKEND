@@ -44,15 +44,15 @@ public class CryptoService {
         return encryptedKey;
     }
 
-    public byte[] encryptFileData(MultipartFile file, byte[] encryptedSecretKey) throws Exception {
+    public byte[] encryptFileData(MultipartFile file, byte[] secretKeyBytes) throws Exception {
         byte[] encFileByteArray = null;
         try {
             byte [] fileByteArr=file.getBytes();
             //generate secret key from byte data
-            SecretKey encryptedKey = new SecretKeySpec(encryptedSecretKey, 0, encryptedSecretKey.length, "AES");
+            SecretKey secretKey = new SecretKeySpec(secretKeyBytes, 0, secretKeyBytes.length, "AES");
 
             Cipher cipher = Cipher.getInstance("AES");
-            cipher.init(cipher.ENCRYPT_MODE, encryptedKey);
+            cipher.init(cipher.ENCRYPT_MODE, secretKey);
 
             encFileByteArray = cipher.doFinal(fileByteArr);
 
