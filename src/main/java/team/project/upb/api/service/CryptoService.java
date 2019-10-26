@@ -30,12 +30,6 @@ public class CryptoService {
     }
 
     public byte[] encryptSecretKey(byte[] secretKey, String publicKeyStr) throws NoSuchAlgorithmException, NoSuchPaddingException, InvalidKeyException, NoSuchProviderException, InvalidKeySpecException, BadPaddingException, IllegalBlockSizeException {
-//        KeyPairGenerator kpg = KeyPairGenerator.getInstance("RSA");
-//        kpg.initialize(2048);
-//        KeyPair keyPair = kpg.generateKeyPair();
-//        PublicKey publicKey = keyPair.getPublic();
-//        PrivateKey privateKey1 = keyPair.getPrivate();
-//        String privateString = Base64.getEncoder().encodeToString(privateKey1.getEncoded());
 
         byte[] publicBytes = Base64.getDecoder().decode(publicKeyStr);
         X509EncodedKeySpec keySpec = new X509EncodedKeySpec(publicBytes);
@@ -64,11 +58,7 @@ public class CryptoService {
 
         } catch (IOException ex) {
             throw new Exception("Errorencrypting/decryptingfile"+ex.getMessage(),ex);
-        } catch (NoSuchAlgorithmException | NoSuchPaddingException | IllegalBlockSizeException e) {
-            e.printStackTrace();
-        } catch (BadPaddingException e) {
-            e.printStackTrace();
-        } catch (InvalidKeyException e) {
+        } catch (BadPaddingException | InvalidKeyException | NoSuchAlgorithmException | NoSuchPaddingException | IllegalBlockSizeException e) {
             e.printStackTrace();
         }
 
