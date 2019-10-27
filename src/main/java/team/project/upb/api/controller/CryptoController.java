@@ -11,7 +11,7 @@ import java.io.*;
 import java.util.Base64;
 
 @RestController
-@CrossOrigin
+@CrossOrigin(origins = "http://localhost:4200")
 @RequestMapping(value = "/api")
 public class CryptoController {
 
@@ -41,14 +41,16 @@ public class CryptoController {
     }
 
     @PostMapping(path = "/decrypt")
-    public ResponseEntity<byte[]> decryptFile(@RequestParam("file") MultipartFile file, @RequestParam("encryptedSecretKey") String encryptedSecretKeyStr, @RequestParam("privateKey") String privateKey) throws Exception {
+    public ResponseEntity<byte[]> decryptFile(@RequestParam("file") MultipartFile file,
+                                              @RequestParam("encryptedSecretKey") String encryptedSecretKeyStr,
+                                              @RequestParam("privateKey") String privateKey) throws Exception {
 
         byte[] encryptedSecretKey = Base64.getDecoder().decode(encryptedSecretKeyStr);
-        byte[] secretKey = cryptoService.decryptSecretKey(encryptedSecretKey,privateKey);
+        byte[] secretKey = cryptoService.decryptSecretKey(encryptedSecretKey, privateKey);
 
-        byte[] decFileBytes = cryptoService.decryptFileData(file,secretKey);
+        byte[] decFileBytes = cryptoService.decryptFileData(file, secretKey);
 
-        return cryptoService.downloadFile(decFileBytes,file,null);
+        return cryptoService.downloadFile(decFileBytes, file, null);
     }
 
 }

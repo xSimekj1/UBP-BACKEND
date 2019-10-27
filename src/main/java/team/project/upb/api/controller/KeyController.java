@@ -7,7 +7,8 @@ import team.project.upb.api.service.KeyService;
 import java.util.Map;
 
 @RestController
-@CrossOrigin
+//@CrossOrigin
+@CrossOrigin(origins = "http://localhost:4200")
 @RequestMapping(value = "/api")
 public class KeyController {
 

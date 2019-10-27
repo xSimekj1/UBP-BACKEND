@@ -42,6 +42,6 @@ public class KeyService {
     }
 
     public boolean isPublicKeyValid(String publicKey){
-        return keyPairRepository.getOne(1L).getPublicKeyValue().equals(publicKey) ? true : false;
+        return keyPairRepository.getOne(1L).getPublicKeyValue().equals(publicKey);
     }
 }
