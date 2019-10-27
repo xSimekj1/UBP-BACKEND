@@ -21,7 +21,8 @@ import java.security.spec.X509EncodedKeySpec;
 
 @Service
 public class CryptoService {
-    private static final String initVector = "encryptionIntVec";
+
+    private final String initVector = "encryptionIntVec";
 
     public byte[] generateSecretKey() throws NoSuchAlgorithmException {
         KeyGenerator generator = KeyGenerator.getInstance("AES");
@@ -49,7 +50,7 @@ public class CryptoService {
     public byte[] encryptFileData(MultipartFile file, byte[] secretKeyBytes) throws Exception {
         byte[] encFileByteArray = null;
         try {
-            byte [] fileByteArr=file.getBytes();
+            byte[] fileByteArr = file.getBytes();
 
             IvParameterSpec iv = new IvParameterSpec(initVector.getBytes("UTF-8"));
             SecretKeySpec skeySpec = new SecretKeySpec(secretKeyBytes, "AES");
@@ -83,10 +84,12 @@ public class CryptoService {
         return decryptedKeyBytes;
     }
 
-    public byte[] decryptFileData(MultipartFile file, byte[] secretKeyBytes) throws Exception {
+//    public byte[] decryptFileData(MultipartFile file, byte[] secretKeyBytes) throws Exception {
+    public byte[] decryptFileData(byte[] fileByteArr, byte[] secretKeyBytes) throws Exception {
+
         byte[] decryptedFileBytes = null;
         try {
-            byte [] fileByteArr=file.getBytes();
+//            byte [] fileByteArr=file.getBytes();
 
             IvParameterSpec iv = new IvParameterSpec(initVector.getBytes("UTF-8"));
             SecretKeySpec skeySpec = new SecretKeySpec(secretKeyBytes, "AES");
@@ -105,15 +108,13 @@ public class CryptoService {
         return decryptedFileBytes;
     }
     
-    public  ResponseEntity<byte[]> downloadFile(byte[] encryptedFile, MultipartFile file, byte[] encryptedKey) throws IOException {
-        //TODO - do not send key in httpheaders?
+    public  ResponseEntity<byte[]> downloadFile(byte[] encryptedFile, String fileName) {
 
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_OCTET_STREAM);
-        headers.setContentDispositionFormData(file.getName(), file.getName());
+        headers.setContentDispositionFormData(fileName, fileName);
         headers.setCacheControl("must-revalidate, post-check=0, pre-check=0");
-        if (encryptedKey != null)
-            headers.add("encryptedKey", Base64.getEncoder().encodeToString(encryptedKey));
+
         ResponseEntity<byte[]> response = new ResponseEntity<>(encryptedFile, headers, HttpStatus.OK);
         return response;
     }

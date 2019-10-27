@@ -8,6 +8,9 @@ import team.project.upb.api.service.CryptoService;
 import team.project.upb.api.service.KeyService;
 
 import java.io.*;
+import java.nio.charset.StandardCharsets;
+import java.security.Signature;
+import java.util.Arrays;
 import java.util.Base64;
 
 @RestController
@@ -20,37 +23,49 @@ public class CryptoController {
     @Autowired
     KeyService keyService;
 
+    private final boolean IS_TEST = false;
+    private final int SECRET_KEY_LENGTH = 128;
+
     @PostMapping(path = "/encrypt")
-    public ResponseEntity<byte[]> encryptFile(@RequestParam("file") MultipartFile file, @RequestParam("publicKey") String publicKey) throws Exception {
-        if (!keyService.isPublicKeyValid(publicKey))
+    public ResponseEntity<byte[]> encryptFile(@RequestParam("file") MultipartFile file,
+                                              @RequestParam("publicKey") String publicKey) throws Exception {
+
+        if (!keyService.isPublicKeyValid(publicKey)) {
             throw new Exception("Not valid Public Key");
+        }
 
         byte[] secretKey = cryptoService.generateSecretKey();
         byte[] encryptedSecretKey = cryptoService.encryptSecretKey(secretKey, publicKey);
+        byte[] encFileBytes = cryptoService.encryptFileData(file, secretKey);
 
-        byte[] encFileBytes = cryptoService.encryptFileData(file,secretKey);
+        // Write secret key at the start of the encrypted file
+        ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+        outputStream.write(encryptedSecretKey);
+        outputStream.write(encFileBytes);
 
-        //Temporary for downloading files localy for testing
-        File convFile = new File(file.getOriginalFilename());
-        convFile.createNewFile();
-        FileOutputStream fos = new FileOutputStream(convFile);
-        fos.write(encFileBytes);
-        fos.close();
+        byte[] encryptedSecretKeyArr = new byte[SECRET_KEY_LENGTH];
+        InputStream is = new ByteArrayInputStream(outputStream.toByteArray());
+        is.read(encryptedSecretKeyArr, 0, encryptedSecretKeyArr.length);
 
-        return cryptoService.downloadFile(encFileBytes,file,encryptedSecretKey);
+        return cryptoService.downloadFile(outputStream.toByteArray(), "encrypted" + file.getOriginalFilename());
+
     }
 
     @PostMapping(path = "/decrypt")
     public ResponseEntity<byte[]> decryptFile(@RequestParam("file") MultipartFile file,
-                                              @RequestParam("encryptedSecretKey") String encryptedSecretKeyStr,
                                               @RequestParam("privateKey") String privateKey) throws Exception {
 
-        byte[] encryptedSecretKey = Base64.getDecoder().decode(encryptedSecretKeyStr);
-        byte[] secretKey = cryptoService.decryptSecretKey(encryptedSecretKey, privateKey);
+        byte[] encryptedSecretKeyArr = new byte[SECRET_KEY_LENGTH];
+        file.getInputStream().read(encryptedSecretKeyArr, 0, encryptedSecretKeyArr.length);
 
-        byte[] decFileBytes = cryptoService.decryptFileData(file, secretKey);
+        byte[] secretKey = cryptoService.decryptSecretKey(encryptedSecretKeyArr, privateKey);
+        byte[] decFileBytes = cryptoService.decryptFileData(Arrays.copyOfRange(file.getBytes(),SECRET_KEY_LENGTH, file.getBytes().length), secretKey);
 
-        return cryptoService.downloadFile(decFileBytes, file, null);
+        // integrity
+//        Signature signature = Signature.getInstance("SHA1withRSA");
+//        signature.initSign(encryptedSecretKeyStr);
+
+        return cryptoService.downloadFile(decFileBytes, "decrypted" + file.getOriginalFilename());
     }
 
     @GetMapping(path = "/test")
