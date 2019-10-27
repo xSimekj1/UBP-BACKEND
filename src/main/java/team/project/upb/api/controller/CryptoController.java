@@ -53,4 +53,10 @@ public class CryptoController {
         return cryptoService.downloadFile(decFileBytes, file, null);
     }
 
+    @GetMapping(path = "/test")
+    public String testCall() {
+        System.out.println("called");
+        return "works";
+    }
+
 }
