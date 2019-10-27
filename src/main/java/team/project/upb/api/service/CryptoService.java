@@ -10,6 +10,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.crypto.*;
+import javax.crypto.spec.IvParameterSpec;
 import javax.crypto.spec.SecretKeySpec;
 import java.io.IOException;
 import java.security.*;
@@ -20,6 +21,7 @@ import java.security.spec.X509EncodedKeySpec;
 
 @Service
 public class CryptoService {
+    private static final String initVector = "encryptionIntVec";
 
     public byte[] generateSecretKey() throws NoSuchAlgorithmException {
         KeyGenerator generator = KeyGenerator.getInstance("AES");
@@ -48,11 +50,12 @@ public class CryptoService {
         byte[] encFileByteArray = null;
         try {
             byte [] fileByteArr=file.getBytes();
-            //generate secret key from byte data
-            SecretKey secretKey = new SecretKeySpec(secretKeyBytes, 0, secretKeyBytes.length, "AES");
 
-            Cipher cipher = Cipher.getInstance("AES");
-            cipher.init(cipher.ENCRYPT_MODE, secretKey);
+            IvParameterSpec iv = new IvParameterSpec(initVector.getBytes("UTF-8"));
+            SecretKeySpec skeySpec = new SecretKeySpec(secretKeyBytes, "AES");
+
+            Cipher cipher = Cipher.getInstance("AES/CBC/PKCS5Padding");
+            cipher.init(cipher.ENCRYPT_MODE, skeySpec, iv);
 
             encFileByteArray = cipher.doFinal(fileByteArr);
 
@@ -84,10 +87,12 @@ public class CryptoService {
         byte[] decryptedFileBytes = null;
         try {
             byte [] fileByteArr=file.getBytes();
-            SecretKey secretKey = new SecretKeySpec(secretKeyBytes, 0, secretKeyBytes.length, "AES");
 
-            Cipher cipher = Cipher.getInstance("AES");
-            cipher.init(Cipher.DECRYPT_MODE, secretKey);
+            IvParameterSpec iv = new IvParameterSpec(initVector.getBytes("UTF-8"));
+            SecretKeySpec skeySpec = new SecretKeySpec(secretKeyBytes, "AES");
+
+            Cipher cipher = Cipher.getInstance("AES/CBC/PKCS5Padding");
+            cipher.init(Cipher.DECRYPT_MODE, skeySpec, iv);
 
             decryptedFileBytes = cipher.doFinal(fileByteArr);
 
