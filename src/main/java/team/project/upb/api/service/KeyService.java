@@ -5,10 +5,9 @@ import org.springframework.stereotype.Service;
 import team.project.upb.api.model.KeyPairPP;
 import team.project.upb.api.repository.KeyPairRepository;
 
-import java.security.Key;
-import java.security.KeyPair;
-import java.security.KeyPairGenerator;
-import java.security.SecureRandom;
+import java.security.*;
+import java.security.spec.PKCS8EncodedKeySpec;
+import java.security.spec.X509EncodedKeySpec;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Base64;
@@ -43,5 +42,36 @@ public class KeyService {
 
     public boolean isPublicKeyValid(String publicKey){
         return keyPairRepository.getOne(1L).getPublicKeyValue().equals(publicKey);
+    }
+
+    public PublicKey getPublickey(String key) {
+        try{
+            byte[] byteKey = Base64.getDecoder().decode(key.getBytes());
+            X509EncodedKeySpec X509publicKey = new X509EncodedKeySpec(byteKey);
+
+            KeyFactory kf = KeyFactory.getInstance("RSA");
+            return kf.generatePublic(X509publicKey);
+        }
+        catch(Exception e){
+            e.printStackTrace();
+        }
+
+        return null;
+    }
+
+    public PrivateKey getPrivatekey(String key) {
+        try{
+
+            byte[] byteKey = Base64.getDecoder().decode(key.getBytes());
+            PKCS8EncodedKeySpec keySpecPKCS8 = new PKCS8EncodedKeySpec(byteKey);
+
+            KeyFactory kf = KeyFactory.getInstance("RSA");
+            return kf.generatePrivate(keySpecPKCS8);
+        }
+        catch(Exception e){
+            e.printStackTrace();
+        }
+
+        return null;
     }
 }

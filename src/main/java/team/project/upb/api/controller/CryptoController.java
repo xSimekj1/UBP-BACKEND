@@ -9,6 +9,7 @@ import team.project.upb.api.service.KeyService;
 
 import java.io.*;
 import java.nio.charset.StandardCharsets;
+import java.security.PublicKey;
 import java.security.Signature;
 import java.util.Arrays;
 import java.util.Base64;
@@ -20,11 +21,13 @@ public class CryptoController {
 
     @Autowired
     CryptoService cryptoService;
+
     @Autowired
     KeyService keyService;
 
     private final boolean IS_TEST = false;
     private final int SECRET_KEY_LENGTH = 128;
+    private final int SIGNATURE_LENGTH = 128;
 
     @PostMapping(path = "/encrypt")
     public ResponseEntity<byte[]> encryptFile(@RequestParam("file") MultipartFile file,
@@ -37,6 +40,19 @@ public class CryptoController {
         byte[] secretKey = cryptoService.generateSecretKey();
         byte[] encryptedSecretKey = cryptoService.encryptSecretKey(secretKey, publicKey);
         byte[] encFileBytes = cryptoService.encryptFileData(file, secretKey);
+
+        // Verify integrity
+//        Signature sig = Signature.getInstance("SHA1WithRSA");
+//        PublicKey pK = keyService.getPublickey(publicKey);
+//        sig.initVerify(pK);
+//        sig.update(encFileBytes);
+//
+//        if (sig.verify(encFileBytes)) {
+//            System.out.println("verifikovane");
+//        }
+//        else {
+//            System.out.println("narusena integrita");
+//        }
 
         // Write secret key at the start of the encrypted file
         ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
@@ -62,10 +78,15 @@ public class CryptoController {
         byte[] decFileBytes = cryptoService.decryptFileData(Arrays.copyOfRange(file.getBytes(),SECRET_KEY_LENGTH, file.getBytes().length), secretKey);
 
         // integrity
-//        Signature signature = Signature.getInstance("SHA1withRSA");
-//        signature.initSign(encryptedSecretKeyStr);
+//        Signature sig = Signature.getInstance("SHA1WithRSA");
+//        sig.initSign(keyService.getPrivatekey(privateKey));
+//        sig.update(file.getBytes());
+//        byte[] signatureBytes = sig.sign();
+//        System.out.println(signatureBytes.length);
 
         return cryptoService.downloadFile(decFileBytes, "decrypted" + file.getOriginalFilename());
+//        return cryptoService.downloadFile(signatureBytes, "decrypted" + file.getOriginalFilename());
+
     }
 
     @GetMapping(path = "/test")
