@@ -1,6 +1,9 @@
 package team.project.upb.api.controller;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
@@ -9,6 +12,7 @@ import team.project.upb.api.service.KeyService;
 
 import java.io.*;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
 import java.security.PublicKey;
 import java.security.Signature;
 import java.util.Arrays;
@@ -87,6 +91,21 @@ public class CryptoController {
         return cryptoService.downloadFile(decFileBytes, "decrypted" + file.getOriginalFilename());
 //        return cryptoService.downloadFile(signatureBytes, "decrypted" + file.getOriginalFilename());
 
+    }
+
+    @GetMapping(path = "/offlineapp")
+    public ResponseEntity getApp() throws IOException {
+//        File f = new File("DecryptingApp.jar");
+        File catalinaBase = new File( System.getProperty( "catalina.base" ) ).getAbsoluteFile();
+        File f = new File( catalinaBase, "webapps/DecryptingApp.jar" );
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_OCTET_STREAM);
+        headers.setContentDispositionFormData(f.getName(), f.getName());
+        headers.setCacheControl("must-revalidate, post-check=0, pre-check=0");
+
+        ResponseEntity<byte[]> response = new ResponseEntity<byte[]>(Files.readAllBytes(f.toPath()), headers, HttpStatus.OK);
+        return response;
     }
 
     @GetMapping(path = "/test")
