@@ -1,4 +1,4 @@
-package team.project.upb.api.config;
+package team.project.upb.api.security;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

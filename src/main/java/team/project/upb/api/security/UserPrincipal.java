@@ -1,4 +1,4 @@
-package team.project.upb.api.config;
+package team.project.upb.api.security;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import org.springframework.security.core.GrantedAuthority;

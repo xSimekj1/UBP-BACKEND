@@ -1,4 +1,4 @@
-package team.project.upb.api.config;
+package team.project.upb.api.security;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -9,7 +9,6 @@ import org.springframework.transaction.annotation.Transactional;
 import team.project.upb.api.model.User;
 import team.project.upb.api.repository.UserRepository;
 
-import java.util.Optional;
 
 @Service
 public class CustomUserDetailsService implements UserDetailsService {

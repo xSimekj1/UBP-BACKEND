@@ -3,11 +3,9 @@ package team.project.upb.api.controller;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
-import team.project.upb.api.config.CurrentUser;
-import team.project.upb.api.config.UserPrincipal;
+import team.project.upb.api.security.CurrentUser;
+import team.project.upb.api.security.UserPrincipal;
 import team.project.upb.api.repository.UserRepository;
-
-import java.security.Principal;
 
 @RestController
 @CrossOrigin(origins = "http://localhost:4200")

@@ -1,5 +1,6 @@
 package team.project.upb.api.controller;
 
+import org.passay.RuleResult;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -7,11 +8,10 @@ import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
-import team.project.upb.api.config.CustomPasswordEncoder;
-import team.project.upb.api.config.JwtTokenProvider;
+import team.project.upb.api.security.CustomPasswordEncoder;
+import team.project.upb.api.security.JwtTokenProvider;
 import team.project.upb.api.model.Role;
 import team.project.upb.api.model.RoleName;
 import team.project.upb.api.model.User;
@@ -21,6 +21,7 @@ import team.project.upb.api.payload.LoginRequest;
 import team.project.upb.api.payload.SignUpRequest;
 import team.project.upb.api.repository.RoleRepository;
 import team.project.upb.api.repository.UserRepository;
+import team.project.upb.api.service.UserService;
 
 import javax.validation.Valid;
 import java.net.URI;
@@ -46,6 +47,9 @@ public class AuthController {
     @Autowired
     JwtTokenProvider tokenProvider;
 
+    @Autowired
+    UserService userService;
+
     @PostMapping("/signin")
     public ResponseEntity<?> authenticateUser(@Valid @RequestBody LoginRequest loginRequest) {
 
@@ -69,6 +73,11 @@ public class AuthController {
                     HttpStatus.BAD_REQUEST);
         }
 
+        //TODO - exception handling
+        RuleResult ruleResult = userService.validatePassword(signUpRequest.getPassword());
+        if (!ruleResult.isValid()){
+            return new ResponseEntity(new ApiResponse(true, ruleResult.toString()),HttpStatus.BAD_REQUEST);
+        }
         // Creating user's account
         User user = new User(signUpRequest.getUsername(), signUpRequest.getPassword());
 
@@ -87,4 +96,6 @@ public class AuthController {
 
         return ResponseEntity.created(location).body(new ApiResponse(true, "User registered successfully"));
     }
+
+
 }

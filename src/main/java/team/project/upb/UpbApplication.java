@@ -3,8 +3,7 @@ package team.project.upb;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Bean;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
-import team.project.upb.api.config.CustomPasswordEncoder;
+import team.project.upb.api.security.CustomPasswordEncoder;
 
 @SpringBootApplication
 public class UpbApplication {

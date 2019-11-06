@@ -1,4 +1,4 @@
-package team.project.upb.api.config;
+package team.project.upb.api.security;
 
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 
