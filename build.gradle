@@ -17,14 +17,19 @@ dependencies {
 	implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
 	implementation 'org.springframework.boot:spring-boot-starter-web'
 	implementation 'org.postgresql:postgresql'
+	implementation 'mysql:mysql-connector-java:8.0.12'
+	implementation 'io.jsonwebtoken:jjwt:0.9.1'
 
+	compile group: 'com.auth0', name: 'java-jwt', version: '2.0.1'
 	compile group: 'io.springfox', name: 'springfox-swagger2', version: '2.9.2'
 	compile "io.springfox:springfox-swagger-ui:2.9.2"
-	
 	compile group: 'commons-io', name: 'commons-io', version: '2.0.1'
+	compile("org.springframework.boot:spring-boot-starter-security")
+
 	testImplementation('org.springframework.boot:spring-boot-starter-test') {
 		exclude group: 'org.junit.vintage', module: 'junit-vintage-engine'
 	}
+	testImplementation 'org.springframework.security:spring-security-test'
 }
 
 test {

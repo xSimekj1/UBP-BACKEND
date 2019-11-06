@@ -1,9 +1,11 @@
 package team.project.upb.api.service;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
-import team.project.upb.api.model.KeyPairPP;
-import team.project.upb.api.repository.KeyPairRepository;
+import team.project.upb.api.model.User;
+import org.springframework.security.core.context.SecurityContextHolder;
+import team.project.upb.api.repository.UserRepository;
 
 import java.security.*;
 import java.security.spec.PKCS8EncodedKeySpec;
@@ -16,7 +18,20 @@ import java.util.Base64;
 public class KeyService {
 
     @Autowired
-    KeyPairRepository keyPairRepository;
+    UserRepository userRepository;
+
+    public Map<String ,String> getKeys() throws Exception {
+        String loggedInUsername = SecurityContextHolder.getContext().getAuthentication().getName();
+        User loggedInUser = userRepository.findByUsername(loggedInUsername).orElseThrow(() ->
+                new UsernameNotFoundException("User not found with username: " + loggedInUsername)
+        );
+
+        HashMap<String, String> keyMap = new HashMap<>();
+        keyMap.put("publicK", loggedInUser.getPublicKeyValue());
+        keyMap.put("privateK", loggedInUser.getPrivateKeyValue());
+
+        return keyMap;
+    }
 
     public Map<String ,String> generateKeys() throws Exception {
         KeyPairGenerator kpg = KeyPairGenerator.getInstance("RSA");
@@ -29,9 +44,14 @@ public class KeyService {
         String publicString = Base64.getEncoder().encodeToString(publicKey.getEncoded());
         String privateString = Base64.getEncoder().encodeToString(privateKey.getEncoded());
 
-        //Only one user with userId = 1
-        KeyPairPP keyPairPPEntity = new KeyPairPP(1L,publicString,privateString);
-        keyPairRepository.save(keyPairPPEntity);
+        String loggedInUsername = SecurityContextHolder.getContext().getAuthentication().getName();
+        User loggedInUser = userRepository.findByUsername(loggedInUsername).orElseThrow(() ->
+                new UsernameNotFoundException("User not found with username: " + loggedInUsername)
+        );
+
+        loggedInUser.setPublicKeyValue(publicString);
+        loggedInUser.setPrivateKeyValue(privateString);
+        userRepository.save(loggedInUser);
 
         HashMap<String, String> keyMap = new HashMap<>();
         keyMap.put("publicK", publicString);
@@ -41,7 +61,11 @@ public class KeyService {
     }
 
     public boolean isPublicKeyValid(String publicKey){
-        return keyPairRepository.getOne(1L).getPublicKeyValue().equals(publicKey);
+        String loggedInUsername = SecurityContextHolder.getContext().getAuthentication().getName();
+        User loggedInUser = userRepository.findByUsername(loggedInUsername).orElseThrow(() ->
+                new UsernameNotFoundException("User not found with username: " + loggedInUsername)
+        );
+        return loggedInUser.getPublicKeyValue().equals(publicKey) ? true : false;
     }
 
     public PublicKey getPublickey(String key) {

@@ -7,7 +7,6 @@ import team.project.upb.api.service.KeyService;
 import java.util.Map;
 
 @RestController
-//@CrossOrigin
 @CrossOrigin(origins = "http://localhost:4200")
 @RequestMapping(value = "/api")
 public class KeyController {
@@ -16,7 +15,12 @@ public class KeyController {
     KeyService keyService;
 
     @GetMapping("/generatekeys")
-    public Map<String, String> encryptFile() throws Exception {
+    public Map<String, String> generateKeys() throws Exception {
         return keyService.generateKeys();
+    }
+
+    @GetMapping("/getkeys")
+    public Map<String, String> getKeys() throws Exception {
+        return keyService.getKeys();
     }
 }

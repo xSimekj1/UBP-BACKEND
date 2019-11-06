@@ -11,12 +11,8 @@ import team.project.upb.api.service.CryptoService;
 import team.project.upb.api.service.KeyService;
 
 import java.io.*;
-import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
-import java.security.PublicKey;
-import java.security.Signature;
 import java.util.Arrays;
-import java.util.Base64;
 
 @RestController
 @CrossOrigin(origins = "http://localhost:4200")
@@ -95,9 +91,9 @@ public class CryptoController {
 
     @GetMapping(path = "/offlineapp")
     public ResponseEntity getApp() throws IOException {
-//        File f = new File("DecryptingApp.jar");
-        File catalinaBase = new File( System.getProperty( "catalina.base" ) ).getAbsoluteFile();
-        File f = new File( catalinaBase, "webapps/DecryptingApp.jar" );
+        File f = new File("DecryptingApp.jar");
+//        File catalinaBase = new File( System.getProperty( "catalina.base" ) ).getAbsoluteFile();
+//        File f = new File( catalinaBase, "webapps/DecryptingApp.jar" );
 
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_OCTET_STREAM);
