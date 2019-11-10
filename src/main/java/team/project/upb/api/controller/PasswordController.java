@@ -8,7 +8,7 @@ import team.project.upb.api.service.PasswordService;
 
 @RestController
 @CrossOrigin(origins = "http://localhost:4200")
-@RequestMapping(value = "/api")
+@RequestMapping(value = "/api/auth")
 public class PasswordController {
 
     @Autowired

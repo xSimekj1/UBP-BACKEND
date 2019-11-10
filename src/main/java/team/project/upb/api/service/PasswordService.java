@@ -19,7 +19,7 @@ public class PasswordService {
     private List<Rule> defineRules() {
 
         List<Rule> rules = new ArrayList<>();
-        rules.add(new LengthRule(8, 16));
+        rules.add(new LengthRule(8, 20));
         rules.add(new WhitespaceRule());
         rules.add(new CharacterRule(EnglishCharacterData.UpperCase, 1));
         rules.add(new CharacterRule(EnglishCharacterData.LowerCase, 1));
