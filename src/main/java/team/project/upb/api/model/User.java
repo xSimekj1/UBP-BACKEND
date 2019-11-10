@@ -92,4 +92,5 @@ public class User {
     public void setPrivateKeyValue(String privateKeyValue) {
         this.privateKeyValue = privateKeyValue;
     }
+
 }

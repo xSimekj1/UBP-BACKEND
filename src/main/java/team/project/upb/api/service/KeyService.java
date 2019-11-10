@@ -20,7 +20,7 @@ public class KeyService {
     @Autowired
     UserRepository userRepository;
 
-    public Map<String ,String> getKeys() throws Exception {
+    public Map<String, String> getKeys() throws Exception {
         String loggedInUsername = SecurityContextHolder.getContext().getAuthentication().getName();
         User loggedInUser = userRepository.findByUsername(loggedInUsername).orElseThrow(() ->
                 new UsernameNotFoundException("User not found with username: " + loggedInUsername)
@@ -33,7 +33,7 @@ public class KeyService {
         return keyMap;
     }
 
-    public Map<String ,String> generateKeys() throws Exception {
+    public Map<String, String> generateKeys() throws Exception {
         KeyPairGenerator kpg = KeyPairGenerator.getInstance("RSA");
         SecureRandom random = SecureRandom.getInstance("SHA1PRNG", "SUN");
         kpg.initialize(1024, random);
@@ -41,6 +41,7 @@ public class KeyService {
         Key publicKey = kp.getPublic();
         Key privateKey = kp.getPrivate();
 
+        System.out.println("aaaaa");
         String publicString = Base64.getEncoder().encodeToString(publicKey.getEncoded());
         String privateString = Base64.getEncoder().encodeToString(privateKey.getEncoded());
 
@@ -65,7 +66,7 @@ public class KeyService {
         User loggedInUser = userRepository.findByUsername(loggedInUsername).orElseThrow(() ->
                 new UsernameNotFoundException("User not found with username: " + loggedInUsername)
         );
-        return loggedInUser.getPublicKeyValue().equals(publicKey) ? true : false;
+        return loggedInUser.getPublicKeyValue().equals(publicKey);
     }
 
     public PublicKey getPublickey(String key) {
