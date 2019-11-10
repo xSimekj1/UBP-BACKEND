@@ -104,10 +104,4 @@ public class CryptoController {
         return response;
     }
 
-    @GetMapping(path = "/test")
-    public String testCall() {
-        System.out.println("called");
-        return "works";
-    }
-
 }

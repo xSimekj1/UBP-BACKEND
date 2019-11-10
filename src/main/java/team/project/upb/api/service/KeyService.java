@@ -41,7 +41,6 @@ public class KeyService {
         Key publicKey = kp.getPublic();
         Key privateKey = kp.getPrivate();
 
-        System.out.println("aaaaa");
         String publicString = Base64.getEncoder().encodeToString(publicKey.getEncoded());
         String privateString = Base64.getEncoder().encodeToString(privateKey.getEncoded());
 
