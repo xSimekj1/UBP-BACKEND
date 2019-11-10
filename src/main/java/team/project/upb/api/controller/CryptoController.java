@@ -91,9 +91,10 @@ public class CryptoController {
 
     @GetMapping(path = "/offlineapp")
     public ResponseEntity getApp() throws IOException {
-        File f = new File("DecryptingApp.jar");
-//        File catalinaBase = new File( System.getProperty( "catalina.base" ) ).getAbsoluteFile();
-//        File f = new File( catalinaBase, "webapps/DecryptingApp.jar" );
+//        File f = new File("DecryptingApp.jar");
+        //Server verzia
+        File catalinaBase = new File( System.getProperty( "catalina.base" ) ).getAbsoluteFile();
+        File f = new File( catalinaBase, "webapps/DecryptingApp.jar" );
 
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_OCTET_STREAM);
