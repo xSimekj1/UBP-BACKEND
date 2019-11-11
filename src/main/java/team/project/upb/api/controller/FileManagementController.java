@@ -1,6 +1,5 @@
 package team.project.upb.api.controller;
 
-import org.passay.RuleResult;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -10,10 +9,8 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import team.project.upb.api.model.FileMetadata;
 import team.project.upb.api.model.FileMetadataDTO;
-import team.project.upb.api.model.PasswordJSON;
 import team.project.upb.api.model.User;
 import team.project.upb.api.service.FileMetadataService;
-import team.project.upb.api.service.PasswordService;
 import team.project.upb.api.service.UserService;
 
 import javax.servlet.http.HttpServletRequest;
