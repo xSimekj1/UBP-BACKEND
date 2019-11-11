@@ -20,7 +20,7 @@ public class PasswordService {
 
         List<Rule> rules = new ArrayList<>();
         rules.add(new LengthRule(8, 20));
-        rules.add(new WhitespaceRule());
+//        rules.add(new WhitespaceRule());
         rules.add(new CharacterRule(EnglishCharacterData.UpperCase, 1));
         rules.add(new CharacterRule(EnglishCharacterData.LowerCase, 1));
         rules.add(new CharacterRule(EnglishCharacterData.Digit, 1));
@@ -33,7 +33,7 @@ public class PasswordService {
 
             String line;
             while((line = br.readLine()) != null) {
-                if (line.length() > 3) { // maybe 4 is more viable
+                if (line.length() >= 3) { // maybe 4 is more viable
                     dictionaryList.add(line);
                 }
             }

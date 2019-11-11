@@ -4,6 +4,7 @@ import org.passay.RuleResult;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 import team.project.upb.api.model.PasswordJSON;
+import team.project.upb.api.model.PasswordMetadata;
 import team.project.upb.api.service.PasswordService;
 
 @RestController
@@ -15,11 +16,26 @@ public class PasswordController {
     private PasswordService passwordService;
 
     @PostMapping(value = "/pass-strength", consumes = "application/json")
-    public boolean checkPasswordStrength(@RequestBody PasswordJSON password) {
+    public PasswordMetadata checkPasswordStrength(@RequestBody PasswordJSON password) {
         String pass = password.getPassword();
         RuleResult result = passwordService.validatePassword(pass);
-        System.out.println(result.getDetails());
-        return result.isValid();
+
+        String details = result.getDetails().toString();
+        details = details.substring(1, details.length() - 1);
+        boolean isValid = result.isValid();
+
+        if (!isValid) {
+            details = details.replace("ILLEGAL_WORD:", "Heslo obsahuje napadnuteľnú sekvenciu znakov: ")
+                             .replace("matchingWord=", "")
+                             .replace("TOO_LONG", "Príliš dlhé")
+                             .replaceAll("Length=", " ");
+        }
+
+        PasswordMetadata passwordMetadata = new PasswordMetadata();
+        passwordMetadata.setValid(isValid);
+        passwordMetadata.setDetails(details);
+
+        return passwordMetadata;
     }
 
 }
