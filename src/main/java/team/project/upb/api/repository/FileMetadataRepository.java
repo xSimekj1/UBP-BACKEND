@@ -13,4 +13,5 @@ public interface FileMetadataRepository extends JpaRepository<FileMetadata, Long
 
     @Query("SELECT fm FROM FileMetadata fm WHERE fm.receiver.id = (:id)")
     List<FileMetadata> findAllByReceiverId(@Param("id") Long id);
+
 }

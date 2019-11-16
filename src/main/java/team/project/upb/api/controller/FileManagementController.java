@@ -7,9 +7,8 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
-import team.project.upb.api.model.FileMetadata;
-import team.project.upb.api.model.FileMetadataDTO;
-import team.project.upb.api.model.User;
+import team.project.upb.api.model.*;
+import team.project.upb.api.service.CommentService;
 import team.project.upb.api.service.FileMetadataService;
 import team.project.upb.api.service.UserService;
 
@@ -21,7 +20,7 @@ import java.util.List;
 
 @RestController
 @CrossOrigin(origins = "http://localhost:4200")
-@RequestMapping(value = "/api")
+@RequestMapping(value = "/api/file")
 public class FileManagementController {
 
     @Autowired
@@ -30,7 +29,10 @@ public class FileManagementController {
     @Autowired
     private FileMetadataService fileMetadataService;
 
-    @PostMapping(value = "/sendfile")
+    @Autowired
+    private CommentService commentService;
+
+    @PostMapping(value = "/send")
     public boolean saveFile(HttpServletRequest request,
                             @RequestParam("file") MultipartFile file,
                             @RequestParam("receiver") String receiverUsername,
@@ -65,8 +67,8 @@ public class FileManagementController {
         return true;
     }
 
-    @GetMapping(value = "/getfiles")
-    public List<FileMetadataDTO> getFiles(@RequestParam String username) {
+    @GetMapping(value = "/getall")
+    public List<FileMetadataDTO> getFilesByUsername(@RequestParam String username) {
 
         User user = userService.findByName(username);
         if (user == null) {
@@ -76,7 +78,18 @@ public class FileManagementController {
         return fileMetadataService.findAllByReceiverId(user.getId());
     }
 
-    @PostMapping(value = "/downloadfile")
+    @GetMapping(value = "/getrestriced")
+    public List<FileMetadataDTO> getFiles(@RequestParam String username) {
+
+        User user = userService.findByName(username);
+        if (user == null) {
+            return null;
+        }
+
+        return fileMetadataService.getAllWithRestrictDownload(user.getId());
+    }
+
+    @PostMapping(value = "/download")
     public ResponseEntity<byte[]> getFile(@RequestBody FileMetadataDTO fileMetadata) {
 
         FileMetadata fm = fileMetadataService.findById(fileMetadata.getId());
@@ -98,5 +111,21 @@ public class FileManagementController {
 
         return response;
     }
+
+    @PostMapping(value = "/update-comments")
+    public CommentDTO updateComments(@RequestBody CommentRequest commentRequest) {
+
+        FileMetadata fm = fileMetadataService.findById(commentRequest.getFileMetadataId());
+        // handle case if file was deleted
+
+        Comment comment = new Comment();
+        comment.setContent(commentRequest.getContent());
+        comment.setFileMetadata(fm);
+        comment.setCommentedBy(commentRequest.getCommentedBy());
+        commentService.save(comment);
+
+        return new CommentDTO();
+    }
+
 
 }
