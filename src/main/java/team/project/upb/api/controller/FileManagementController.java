@@ -17,6 +17,7 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @CrossOrigin(origins = "http://localhost:4200")
@@ -60,22 +61,21 @@ public class FileManagementController {
         fm.setFilePath(filePath);
         fm.setFilename(file.getOriginalFilename());
         fm.setSenderUsername(senderUsername);
-        fm.setReceiver(receiver);
+        fm.getReceivers().add(receiver);
 
         fileMetadataService.save(fm);
 
         return true;
     }
 
-    @GetMapping(value = "/getall")
-    public List<FileMetadataDTO> getFilesByUsername(@RequestParam String username) {
+    @PutMapping(value = "/update-receivers")
+    public void updateReceivers(@RequestBody Map<String, String> payload) {
 
-        User user = userService.findByName(username);
-        if (user == null) {
-            return null;
+        User receiver = userService.findByName(payload.get("receiver"));
+        FileMetadata fm = fileMetadataService.findById(new Long(payload.get("fileId")));
+        if (fm.getReceivers().add(receiver)) {
+            fileMetadataService.save(fm);
         }
-
-        return fileMetadataService.findAllByReceiverId(user.getId());
     }
 
     @GetMapping(value = "/getrestriced")

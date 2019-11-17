@@ -4,6 +4,7 @@ import javax.persistence.*;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.Size;
 import java.util.HashSet;
+import java.util.Objects;
 import java.util.Set;
 
 @Entity
@@ -38,6 +39,10 @@ public class User {
     private String privateKeyValue;
 
     public User() {
+    }
+
+    public User(Long id) {
+        this.id = id;
     }
 
     public User(String username, String password) {
@@ -93,4 +98,17 @@ public class User {
         this.privateKeyValue = privateKeyValue;
     }
 
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        User user = (User) o;
+        return id.equals(user.id);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(id);
+//        , username, password, roles, publicKeyValue, privateKeyValue
+    }
 }

@@ -1,6 +1,8 @@
 package team.project.upb.api.model;
 
 import javax.persistence.*;
+import java.util.HashSet;
+import java.util.Set;
 
 @Entity
 public class FileMetadata {
@@ -11,8 +13,8 @@ public class FileMetadata {
     private String filePath;
     private String filename;
     private String senderUsername;
-    @ManyToOne
-    private User receiver;
+    @ManyToMany
+    private Set<User> receivers = new HashSet<>();
 
     public Long getId() {
         return id;
@@ -46,11 +48,11 @@ public class FileMetadata {
         this.filename = filename;
     }
 
-    public User getReceiver() {
-        return receiver;
+    public Set<User> getReceivers() {
+        return receivers;
     }
 
-    public void setReceiver(User receiver) {
-        this.receiver = receiver;
+    public void setReceivers(Set<User> receivers) {
+        this.receivers = receivers;
     }
 }

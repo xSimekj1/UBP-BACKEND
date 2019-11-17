@@ -5,6 +5,7 @@ import org.springframework.stereotype.Service;
 import team.project.upb.api.model.CommentDTO;
 import team.project.upb.api.model.FileMetadata;
 import team.project.upb.api.model.FileMetadataDTO;
+import team.project.upb.api.model.User;
 import team.project.upb.api.repository.FileMetadataRepository;
 
 import java.util.ArrayList;
@@ -20,27 +21,6 @@ public class FileMetadataService {
     @Autowired
     private CommentService commentService;
 
-    public List<FileMetadataDTO> findAllByReceiverId(Long userId) {
-
-        List<FileMetadataDTO> fileMetadataDTOList = new ArrayList<>();
-        List<FileMetadata> fileMetadataList = this.fileMetadataRepository.findAllByReceiverId(userId);
-
-        if (fileMetadataList == null) {
-            return fileMetadataDTOList;
-        }
-
-        for (FileMetadata fm: fileMetadataList) {
-            FileMetadataDTO fmDTO = new FileMetadataDTO();
-            fmDTO.setId(fm.getId());
-            fmDTO.setFilename(fm.getFilename());
-            fmDTO.setSenderUsername(fm.getSenderUsername());
-
-            fileMetadataDTOList.add(fmDTO);
-        }
-
-        return fileMetadataDTOList;
-    }
-
     public List<FileMetadataDTO> getAllWithRestrictDownload(Long userId) {
 
         List<FileMetadataDTO> fileMetadataDTOList = new ArrayList<>();
@@ -55,7 +35,7 @@ public class FileMetadataService {
             fmDTO.setId(fm.getId());
             fmDTO.setFilename(fm.getFilename());
             fmDTO.setSenderUsername(fm.getSenderUsername());
-            boolean isDownloadable = fm.getReceiver().getId().equals(userId);
+            boolean isDownloadable = fm.getReceivers().contains(new User(userId));
             fmDTO.setDownloadable(isDownloadable);
 
             List<CommentDTO> comments = commentService.findByFileMetadataId(fm.getId());
