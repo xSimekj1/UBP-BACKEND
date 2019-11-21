@@ -71,12 +71,6 @@ public class AuthController {
             return new ResponseEntity(apiResponse, HttpStatus.BAD_REQUEST);
         }
 
-        //TODO - exception handling
-        RuleResult ruleResult = passwordService.validatePassword(signUpRequest.getPassword());
-        if (!ruleResult.isValid()){
-            return new ResponseEntity(new ApiResponse(true, ruleResult.toString()), HttpStatus.BAD_REQUEST);
-        }
-
         // Creating user's account
         User user = new User(signUpRequest.getUsername(), signUpRequest.getPassword());
         user.setPassword(passwordEncoder.encode(user.getPassword()));

@@ -68,6 +68,14 @@ public class KeyService {
         return loggedInUser.getPublicKeyValue().equals(publicKey);
     }
 
+    public String getUserPublickey(String username) {
+        User loggedInUser = userRepository.findByUsername(username).orElseThrow(() ->
+                new UsernameNotFoundException("User not found with username: " + username)
+        );
+
+        return loggedInUser.getPublicKeyValue();
+    }
+
     public PublicKey getPublickey(String key) {
         try{
             byte[] byteKey = Base64.getDecoder().decode(key.getBytes());

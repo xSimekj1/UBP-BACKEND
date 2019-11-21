@@ -5,17 +5,20 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.mock.web.MockMultipartFile;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import team.project.upb.api.model.*;
-import team.project.upb.api.service.CommentService;
-import team.project.upb.api.service.FileMetadataService;
-import team.project.upb.api.service.UserService;
+import team.project.upb.api.repository.UserRepository;
+import team.project.upb.api.service.*;
 
+import javax.activation.MimetypesFileTypeMap;
 import javax.servlet.http.HttpServletRequest;
-import java.io.File;
-import java.io.IOException;
+import java.io.*;
 import java.nio.file.Files;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
@@ -24,8 +27,16 @@ import java.util.Map;
 @RequestMapping(value = "/api/file")
 public class FileManagementController {
 
+    private final int SECRET_KEY_LENGTH = 128;
+
     @Autowired
     private UserService userService;
+
+    @Autowired
+    private KeyService keyService;
+
+    @Autowired
+    private CryptoService cryptoService;
 
     @Autowired
     private FileMetadataService fileMetadataService;
@@ -33,11 +44,14 @@ public class FileManagementController {
     @Autowired
     private CommentService commentService;
 
+    @Autowired
+    private UserRepository userRepository;
+
     @PostMapping(value = "/send")
     public boolean saveFile(HttpServletRequest request,
                             @RequestParam("file") MultipartFile file,
                             @RequestParam("receiver") String receiverUsername,
-                            @RequestParam("sender") String senderUsername) {
+                            @RequestParam("sender") String senderUsername) throws Exception {
 
         // Check if user with this username exists, if not notice client
         User receiver = userService.findByName(receiverUsername);
@@ -45,13 +59,29 @@ public class FileManagementController {
             return false;
         }
 
+        String receiverPublicKey = keyService.getUserPublickey(receiverUsername);
+        byte[] secretKey = cryptoService.generateSecretKey();
+        byte[] encryptedSecretKey = cryptoService.encryptSecretKey(secretKey, receiverPublicKey);
+        byte[] encFileBytes = cryptoService.encryptFileData(file, secretKey);
+
+        ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+        outputStream.write(encryptedSecretKey);
+        outputStream.write(encFileBytes);
+
+        byte[] encryptedSecretKeyArr = new byte[SECRET_KEY_LENGTH];
+        InputStream is = new ByteArrayInputStream(outputStream.toByteArray());
+        is.read(encryptedSecretKeyArr, 0, encryptedSecretKeyArr.length);
+
+        MultipartFile result = new MockMultipartFile(file.getName(),
+                file.getOriginalFilename(), file.getContentType(), outputStream.toByteArray());
+
         // Get upper level of current directory
         String filePath = request.getServletContext().getRealPath(".");
         int index = (filePath.lastIndexOf("\\"));
         filePath = filePath.substring(0, index) + "\\" + file.getOriginalFilename();
 
-        try {
-            file.transferTo(new File(filePath));
+       try {
+            result.transferTo(new File(filePath));
         } catch (IOException e) {
             // TODO: log exception
             System.out.println(e);
@@ -90,11 +120,24 @@ public class FileManagementController {
     }
 
     @PostMapping(value = "/download")
-    public ResponseEntity<byte[]> getFile(@RequestBody FileMetadataDTO fileMetadata) {
+    public ResponseEntity<byte[]> getFile(@RequestBody FileMetadataDTO fileMetadata) throws Exception {
+        String loggedInUsername = SecurityContextHolder.getContext().getAuthentication().getName();
+        User loggedInUser = userRepository.findByUsername(loggedInUsername).orElseThrow(() ->
+                new UsernameNotFoundException("User not found with username: " + loggedInUsername)
+        );
 
         FileMetadata fm = fileMetadataService.findById(fileMetadata.getId());
 
         File f = new File(fm.getFilePath());
+
+        MultipartFile file = new MockMultipartFile(f.getName(),
+                f.getName(), new MimetypesFileTypeMap().getContentType(f), Files.readAllBytes(f.toPath()));
+
+        byte[] encryptedSecretKeyArr = new byte[SECRET_KEY_LENGTH];
+        file.getInputStream().read(encryptedSecretKeyArr, 0, encryptedSecretKeyArr.length);
+
+        byte[] secretKey = cryptoService.decryptSecretKey(encryptedSecretKeyArr, loggedInUser.getPrivateKeyValue());
+        byte[] decFileBytes = cryptoService.decryptFileData(Arrays.copyOfRange(file.getBytes(),SECRET_KEY_LENGTH, file.getBytes().length), secretKey);
 
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_OCTET_STREAM);
@@ -102,12 +145,7 @@ public class FileManagementController {
         headers.setCacheControl("must-revalidate, post-check=0, pre-check=0");
 
         ResponseEntity<byte[]> response = null;
-        try {
-            response = new ResponseEntity<>(Files.readAllBytes(f.toPath()), headers, HttpStatus.OK);
-        } catch(IOException e) {
-            // TODO: log exception
-            System.out.println(e);
-        }
+        response = new ResponseEntity<>(decFileBytes, headers, HttpStatus.OK);
 
         return response;
     }
