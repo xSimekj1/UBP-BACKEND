@@ -47,6 +47,10 @@ public class FileMetadataService {
         return fileMetadataDTOList;
     }
 
+    public void deleteFile(Long id){
+        fileMetadataRepository.deleteById(id);
+    }
+
     public FileMetadata save(FileMetadata fileMetadata) {
         return fileMetadataRepository.save(fileMetadata);
     }

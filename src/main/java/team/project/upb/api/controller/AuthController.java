@@ -6,6 +6,7 @@ import org.springframework.http.*;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
@@ -22,6 +23,7 @@ import team.project.upb.api.service.PasswordService;
 
 import javax.validation.Valid;
 import java.net.URI;
+import java.util.Collection;
 import java.util.Collections;
 
 @RestController
@@ -58,9 +60,10 @@ public class AuthController {
         );
 
         SecurityContextHolder.getContext().setAuthentication(authentication);
+        Collection<SimpleGrantedAuthority> authorities = (Collection<SimpleGrantedAuthority>) SecurityContextHolder.getContext().getAuthentication().getAuthorities();
 
         String jwt = tokenProvider.generateToken(authentication);
-        return ResponseEntity.ok(new JwtAuthenticationResponse(jwt));
+        return ResponseEntity.ok(new JwtAuthenticationResponse(jwt, authorities.toString()));
     }
 
     @PostMapping("/signup")

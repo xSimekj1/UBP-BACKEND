@@ -19,6 +19,7 @@ import javax.servlet.http.HttpServletRequest;
 import java.io.*;
 import java.nio.file.Files;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -117,6 +118,16 @@ public class FileManagementController {
         }
 
         return fileMetadataService.getAllWithRestrictDownload(user.getId());
+    }
+
+    @DeleteMapping(value = "/deletefile")
+    public Map<String, Boolean> deleteEmployee(@RequestBody FileMetadataDTO fileMetadataDto) {
+
+        fileMetadataService.deleteFile(fileMetadataDto.getId());
+
+        Map<String, Boolean> response = new HashMap<>();
+        response.put("deleted", Boolean.TRUE);
+        return response;
     }
 
     @PostMapping(value = "/download")

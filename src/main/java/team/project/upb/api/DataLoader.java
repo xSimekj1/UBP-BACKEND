@@ -27,7 +27,7 @@ public class DataLoader implements ApplicationRunner {
             roleRepository.save(new Role(RoleName.ROLE_USER));
 
         Optional<Role> adminRole = roleRepository.findByName(RoleName.ROLE_ADMIN);
-        if (!userRole.isPresent())
+        if (!adminRole.isPresent())
             roleRepository.save(new Role(RoleName.ROLE_ADMIN));
     }
 }

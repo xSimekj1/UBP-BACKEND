@@ -15,6 +15,8 @@ public class FileMetadata {
     private String senderUsername;
     @ManyToMany
     private Set<User> receivers = new HashSet<>();
+    @OneToMany(mappedBy="fileMetadata", orphanRemoval = true)
+    private Set<Comment> comments;
 
     public Long getId() {
         return id;
@@ -54,5 +56,13 @@ public class FileMetadata {
 
     public void setReceivers(Set<User> receivers) {
         this.receivers = receivers;
+    }
+
+    public Set<Comment> getComments() {
+        return comments;
+    }
+
+    public void setComments(Set<Comment> comments) {
+        this.comments = comments;
     }
 }
