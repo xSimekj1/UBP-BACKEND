@@ -65,6 +65,7 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
                 .antMatchers("/api/encrypt").authenticated()
                 .antMatchers("/api/decrypt").authenticated()
                 .antMatchers("/api/getofflineapp").authenticated()
+                .antMatchers("/api/file/**").authenticated()
                 .antMatchers("/api/auth/**").permitAll()
                 .anyRequest().permitAll();
 

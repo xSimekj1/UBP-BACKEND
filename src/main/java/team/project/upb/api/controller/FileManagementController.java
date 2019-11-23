@@ -161,6 +161,26 @@ public class FileManagementController {
         return response;
     }
 
+    @PostMapping(value = "/downloadenc")
+    public ResponseEntity<byte[]> getEncFile(@RequestBody FileMetadataDTO fileMetadata) throws Exception{
+        FileMetadata fm = fileMetadataService.findById(fileMetadata.getId());
+
+        File f = new File(fm.getFilePath());
+
+        MultipartFile file = new MockMultipartFile(f.getName(),
+                f.getName(), new MimetypesFileTypeMap().getContentType(f), Files.readAllBytes(f.toPath()));
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_OCTET_STREAM);
+        headers.setContentDispositionFormData(fm.getFilename(), fm.getFilename());
+        headers.setCacheControl("must-revalidate, post-check=0, pre-check=0");
+
+        ResponseEntity<byte[]> response = null;
+        response = new ResponseEntity<>(file.getBytes(), headers, HttpStatus.OK);
+
+        return response;
+    }
+
     @PostMapping(value = "/update-comments")
     public CommentDTO updateComments(@RequestBody CommentRequest commentRequest) {
 
