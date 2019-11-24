@@ -61,6 +61,9 @@ public class FileManagementController {
         }
 
         String receiverPublicKey = keyService.getUserPublickey(receiverUsername);
+        if (receiver == null) {
+            return false;
+        }
         byte[] secretKey = cryptoService.generateSecretKey();
         byte[] encryptedSecretKey = cryptoService.encryptSecretKey(secretKey, receiverPublicKey);
         byte[] encFileBytes = cryptoService.encryptFileData(file, secretKey);

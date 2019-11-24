@@ -1,7 +1,5 @@
 package team.project.upb.api.service;
 
-import java.util.Base64;
-
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -12,11 +10,13 @@ import org.springframework.web.multipart.MultipartFile;
 import javax.crypto.*;
 import javax.crypto.spec.IvParameterSpec;
 import javax.crypto.spec.SecretKeySpec;
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.security.*;
 import java.security.spec.InvalidKeySpecException;
 import java.security.spec.PKCS8EncodedKeySpec;
 import java.security.spec.X509EncodedKeySpec;
+import java.util.Base64;
 
 
 @Service
@@ -117,5 +117,23 @@ public class CryptoService {
 
         ResponseEntity<byte[]> response = new ResponseEntity<>(encryptedFile, headers, HttpStatus.OK);
         return response;
+    }
+
+    public static String calculateChecksum(String filepath, byte[] bytes) throws IOException, NoSuchAlgorithmException {
+        MessageDigest md = MessageDigest.getInstance("SHA-256");
+
+        // file hashing with DigestInputStream
+        try (DigestInputStream dis = new DigestInputStream(new ByteArrayInputStream(bytes), md)) {
+            while (dis.read() != -1) ; //empty loop to clear the data
+            md = dis.getMessageDigest();
+        }
+
+        // bytes to hex
+        StringBuilder result = new StringBuilder();
+        for (byte b : md.digest()) {
+            result.append(String.format("%02x", b));
+        }
+        return result.toString();
+
     }
 }

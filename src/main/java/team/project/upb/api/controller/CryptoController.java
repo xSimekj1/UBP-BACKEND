@@ -7,6 +7,7 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.server.ResponseStatusException;
 import team.project.upb.api.service.CryptoService;
 import team.project.upb.api.service.KeyService;
 
@@ -27,7 +28,7 @@ public class CryptoController {
 
     private final boolean IS_TEST = false;
     private final int SECRET_KEY_LENGTH = 128;
-    private final int SIGNATURE_LENGTH = 128;
+    private final int CHECKSUM_LENGTH = 64;
 
     @PostMapping(path = "/encrypt")
     public ResponseEntity<byte[]> encryptFile(@RequestParam("file") MultipartFile file,
@@ -37,56 +38,39 @@ public class CryptoController {
             throw new Exception("Not valid Public Key");
         }
 
+        String checksum = cryptoService.calculateChecksum(file.getName(),file.getBytes());
+
         byte[] secretKey = cryptoService.generateSecretKey();
         byte[] encryptedSecretKey = cryptoService.encryptSecretKey(secretKey, publicKey);
         byte[] encFileBytes = cryptoService.encryptFileData(file, secretKey);
 
-        // Verify integrity
-//        Signature sig = Signature.getInstance("SHA1WithRSA");
-//        PublicKey pK = keyService.getPublickey(publicKey);
-//        sig.initVerify(pK);
-//        sig.update(encFileBytes);
-//
-//        if (sig.verify(encFileBytes)) {
-//            System.out.println("verifikovane");
-//        }
-//        else {
-//            System.out.println("narusena integrita");
-//        }
-
         // Write secret key at the start of the encrypted file
         ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+        outputStream.write(checksum.getBytes());
         outputStream.write(encryptedSecretKey);
         outputStream.write(encFileBytes);
 
-        byte[] encryptedSecretKeyArr = new byte[SECRET_KEY_LENGTH];
-        InputStream is = new ByteArrayInputStream(outputStream.toByteArray());
-        is.read(encryptedSecretKeyArr, 0, encryptedSecretKeyArr.length);
-
         return cryptoService.downloadFile(outputStream.toByteArray(), "encrypted" + file.getOriginalFilename());
-
     }
 
     @PostMapping(path = "/decrypt")
     public ResponseEntity<byte[]> decryptFile(@RequestParam("file") MultipartFile file,
                                               @RequestParam("privateKey") String privateKey) throws Exception {
 
-        byte[] encryptedSecretKeyArr = new byte[SECRET_KEY_LENGTH];
-        file.getInputStream().read(encryptedSecretKeyArr, 0, encryptedSecretKeyArr.length);
+        byte[] checksumBytes = Arrays.copyOfRange(file.getBytes(), 0, CHECKSUM_LENGTH);
+        byte[] encryptedSecretKeyArr = Arrays.copyOfRange(file.getBytes(), CHECKSUM_LENGTH, CHECKSUM_LENGTH + SECRET_KEY_LENGTH);
 
         byte[] secretKey = cryptoService.decryptSecretKey(encryptedSecretKeyArr, privateKey);
-        byte[] decFileBytes = cryptoService.decryptFileData(Arrays.copyOfRange(file.getBytes(),SECRET_KEY_LENGTH, file.getBytes().length), secretKey);
+        byte[] decFileBytes = cryptoService.decryptFileData(Arrays.copyOfRange(file.getBytes(),
+                CHECKSUM_LENGTH + SECRET_KEY_LENGTH, file.getBytes().length), secretKey);
 
-        // integrity
-//        Signature sig = Signature.getInstance("SHA1WithRSA");
-//        sig.initSign(keyService.getPrivatekey(privateKey));
-//        sig.update(file.getBytes());
-//        byte[] signatureBytes = sig.sign();
-//        System.out.println(signatureBytes.length);
+        String checksum = cryptoService.calculateChecksum(file.getName(),decFileBytes);
+        String checksumFromFile = new String (checksumBytes);
+        if (!checksum.equals(checksumFromFile)) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Checksum not equal", new Exception());
+        }
 
         return cryptoService.downloadFile(decFileBytes, "decrypted" + file.getOriginalFilename());
-//        return cryptoService.downloadFile(signatureBytes, "decrypted" + file.getOriginalFilename());
-
     }
 
     @GetMapping(path = "/offlineapp")
