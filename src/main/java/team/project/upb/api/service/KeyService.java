@@ -36,7 +36,7 @@ public class KeyService {
     public Map<String, String> generateKeys() throws Exception {
         KeyPairGenerator kpg = KeyPairGenerator.getInstance("RSA");
         SecureRandom random = SecureRandom.getInstance("SHA1PRNG", "SUN");
-        kpg.initialize(1024, random);
+        kpg.initialize(2048, random);
         KeyPair kp = kpg.genKeyPair();
         Key publicKey = kp.getPublic();
         Key privateKey = kp.getPrivate();

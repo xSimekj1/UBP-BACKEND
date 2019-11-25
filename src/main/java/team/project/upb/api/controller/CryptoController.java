@@ -11,7 +11,9 @@ import org.springframework.web.server.ResponseStatusException;
 import team.project.upb.api.service.CryptoService;
 import team.project.upb.api.service.KeyService;
 
-import java.io.*;
+import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.IOException;
 import java.nio.file.Files;
 import java.util.Arrays;
 
@@ -27,7 +29,7 @@ public class CryptoController {
     KeyService keyService;
 
     private final boolean IS_TEST = false;
-    private final int SECRET_KEY_LENGTH = 128;
+    private final int SECRET_KEY_LENGTH = 256;
     private final int CHECKSUM_LENGTH = 64;
 
     @PostMapping(path = "/encrypt")
@@ -58,9 +60,9 @@ public class CryptoController {
                                               @RequestParam("privateKey") String privateKey) throws Exception {
 
         byte[] checksumBytes = Arrays.copyOfRange(file.getBytes(), 0, CHECKSUM_LENGTH);
-        byte[] encryptedSecretKeyArr = Arrays.copyOfRange(file.getBytes(), CHECKSUM_LENGTH, CHECKSUM_LENGTH + SECRET_KEY_LENGTH);
+        byte[] encSecretKeyArr = Arrays.copyOfRange(file.getBytes(), 64, 320);
 
-        byte[] secretKey = cryptoService.decryptSecretKey(encryptedSecretKeyArr, privateKey);
+        byte[] secretKey = cryptoService.decryptSecretKey(encSecretKeyArr, privateKey);
         byte[] decFileBytes = cryptoService.decryptFileData(Arrays.copyOfRange(file.getBytes(),
                 CHECKSUM_LENGTH + SECRET_KEY_LENGTH, file.getBytes().length), secretKey);
 

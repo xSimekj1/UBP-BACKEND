@@ -26,7 +26,7 @@ public class CryptoService {
 
     public byte[] generateSecretKey() throws NoSuchAlgorithmException {
         KeyGenerator generator = KeyGenerator.getInstance("AES");
-        generator.init(128); // The AES key size in number of bits
+        generator.init(256); // The AES key size in number of bits
         SecretKey secKey = generator.generateKey();
 
         return secKey.getEncoded();
@@ -39,7 +39,6 @@ public class CryptoService {
         KeyFactory keyFactory = KeyFactory.getInstance("RSA");
         PublicKey pubKey = keyFactory.generatePublic(keySpec);
 
-        //encrypt secret key with public key
         Cipher cipher = Cipher.getInstance("RSA/ECB/PKCS1Padding");
         cipher.init(Cipher.PUBLIC_KEY, pubKey);
         byte[] encryptedKey = cipher.doFinal(secretKey/*Seceret Key From Step 1*/);
@@ -80,7 +79,6 @@ public class CryptoService {
         cipher.init(Cipher.PRIVATE_KEY, privateKey);
         byte[] decryptedKeyBytes = cipher.doFinal(encryptedSecretKey);
 
-//        SecretKey decryptedKey= new SecretKeySpec(decryptedKeyBytes , 0, decryptedKeyBytes .length, "AES");
         return decryptedKeyBytes;
     }
 
